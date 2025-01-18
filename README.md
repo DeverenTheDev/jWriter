@@ -1,2 +1,2 @@
-# xWriter
+# jWriter
 Project for Jacobean Writers
