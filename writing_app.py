@@ -56,6 +56,7 @@ class WritingApp:
         self.main_frame = ttk.PanedWindow(self.root, orient=tk.HORIZONTAL)
         self.main_frame.pack(fill="both", expand=True)
 
+        # Left panel: Scenes
         self.scene_frame = ttk.Frame(self.main_frame, width=200)
         self.main_frame.add(self.scene_frame, weight=1)
 
@@ -67,11 +68,42 @@ class WritingApp:
         self.add_button = ttk.Button(self.scene_frame, text="Add Scene", command=self.add_scene)
         self.add_button.pack(pady=5)
 
+        # Middle panel: Text editor
         self.editor_frame = ttk.Frame(self.main_frame)
         self.main_frame.add(self.editor_frame, weight=3)
 
         self.text_editor = tk.Text(self.editor_frame, wrap="word", undo=True, font=("Arial", 12))
         self.text_editor.pack(fill="both", expand=True, padx=5, pady=5)
+
+        # Right panel: Notes
+        self.notes_frame = ttk.Frame(self.main_frame, width=200)
+        self.main_frame.add(self.notes_frame, weight=1)
+
+        self.notes_tree = ttk.Treeview(self.notes_frame)
+        self.notes_tree.heading("#0", text="Notes", anchor="w")
+        self.notes_tree.bind("<<TreeviewSelect>>", self.load_note)  # Define load_note method
+        self.notes_tree.pack(fill="both", expand=True, padx=5, pady=5)
+
+        self.add_note_button = ttk.Button(self.notes_frame, text="Add Note", command=self.add_note)
+        self.add_note_button.pack(pady=5)
+
+
+    def add_note(self):
+        """Add a new note."""
+        note_name = f"Note {len(self.notes_tree.get_children()) + 1}"
+        self.notes_tree.insert("", "end", text=note_name)
+        self.update_status_bar(f"Added {note_name}")
+
+    def load_note(self, event):
+        """Load the selected note into the editor."""
+        selected_item = self.notes_tree.focus()
+        if selected_item:
+            note_name = self.notes_tree.item(selected_item, "text")
+            self.text_editor.delete("1.0", tk.END)
+            self.text_editor.insert("1.0", f"Content for {note_name}")
+            self.update_status_bar(f"Loaded {note_name}")
+
+
 
     def create_status_bar(self):
         """Create a status bar at the bottom."""
