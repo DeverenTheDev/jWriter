@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, font
 import sqlite3
+import os
 
 
 class WritingApp:
@@ -11,7 +12,7 @@ class WritingApp:
 
         # Database variables
         self.conn = None
-        self.current_scene = None
+        self.current_project_path = None
 
         # Create GUI elements
         self.create_menu()
@@ -33,36 +34,17 @@ class WritingApp:
         file_menu.add_command(label="Exit", command=self.close_app)
         menu.add_cascade(label="File", menu=file_menu)
 
-        # Edit Menu
-        edit_menu = tk.Menu(menu, tearoff=False)
-        edit_menu.add_command(label="Undo", command=lambda: self.text_editor.event_generate("<<Undo>>"))
-        edit_menu.add_command(label="Redo", command=lambda: self.text_editor.event_generate("<<Redo>>"))
-        edit_menu.add_separator()
-        edit_menu.add_command(label="Cut", command=lambda: self.text_editor.event_generate("<<Cut>>"))
-        edit_menu.add_command(label="Copy", command=lambda: self.text_editor.event_generate("<<Copy>>"))
-        edit_menu.add_command(label="Paste", command=lambda: self.text_editor.event_generate("<<Paste>>"))
-        menu.add_cascade(label="Edit", menu=edit_menu)
-
-        # View Menu (Placeholder for future functionality)
-        view_menu = tk.Menu(menu, tearoff=False)
-        view_menu.add_command(label="Zoom In", command=lambda: messagebox.showinfo("Zoom", "Zoom In feature coming soon!"))
-        view_menu.add_command(label="Zoom Out", command=lambda: messagebox.showinfo("Zoom", "Zoom Out feature coming soon!"))
-        menu.add_cascade(label="View", menu=view_menu)
-
     def create_toolbar(self):
         """Create a toolbar with formatting options."""
         toolbar = ttk.Frame(self.root, padding=5)
         toolbar.pack(side="top", fill="x")
 
-        # Bold Button
         bold_btn = ttk.Button(toolbar, text="Bold", command=self.toggle_bold)
         bold_btn.pack(side="left", padx=2)
 
-        # Italic Button
         italic_btn = ttk.Button(toolbar, text="Italic", command=self.toggle_italic)
         italic_btn.pack(side="left", padx=2)
 
-        # Font Size Dropdown
         font_sizes = [10, 12, 14, 16, 18, 20, 24]
         self.font_size_var = tk.IntVar(value=12)
         font_size_menu = ttk.Combobox(toolbar, textvariable=self.font_size_var, values=font_sizes, width=5)
@@ -74,7 +56,6 @@ class WritingApp:
         self.main_frame = ttk.PanedWindow(self.root, orient=tk.HORIZONTAL)
         self.main_frame.pack(fill="both", expand=True)
 
-        # Left panel: Scene list
         self.scene_frame = ttk.Frame(self.main_frame, width=200)
         self.main_frame.add(self.scene_frame, weight=1)
 
@@ -86,7 +67,6 @@ class WritingApp:
         self.add_button = ttk.Button(self.scene_frame, text="Add Scene", command=self.add_scene)
         self.add_button.pack(pady=5)
 
-        # Right panel: Text editor
         self.editor_frame = ttk.Frame(self.main_frame)
         self.main_frame.add(self.editor_frame, weight=3)
 
@@ -101,6 +81,91 @@ class WritingApp:
     def update_status_bar(self, message):
         """Update the status bar with a custom message."""
         self.status_bar.config(text=message)
+
+    def new_project(self):
+        """Create a new project."""
+        if self.conn:
+            self.conn.close()
+        self.text_editor.delete("1.0", tk.END)
+        self.tree.delete(*self.tree.get_children())
+        self.current_project_path = None
+        self.conn = None
+        self.update_status_bar("New project created.")
+
+    def open_project(self):
+        """Open an existing project."""
+        project_path = filedialog.askopenfilename(
+            title="Open Project",
+            filetypes=(("SQLite Database Files", "*.db"), ("All Files", "*.*"))
+        )
+        if project_path:
+            self.current_project_path = project_path
+            if self.conn:
+                self.conn.close()
+            self.conn = sqlite3.connect(self.current_project_path)
+            self.load_scenes_from_db()
+            self.update_status_bar(f"Opened project: {os.path.basename(project_path)}")
+
+    def save_project(self):
+        """Save the current project."""
+        if not self.current_project_path:
+            project_path = filedialog.asksaveasfilename(
+                title="Save Project",
+                defaultextension=".db",
+                filetypes=(("SQLite Database Files", "*.db"), ("All Files", "*.*"))
+            )
+            if not project_path:
+                return
+            self.current_project_path = project_path
+            self.conn = sqlite3.connect(self.current_project_path)
+            self.create_db_schema()
+
+        self.save_scenes_to_db()
+        self.update_status_bar(f"Project saved: {os.path.basename(self.current_project_path)}")
+
+    def create_db_schema(self):
+        """Create the database schema."""
+        cursor = self.conn.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS scenes (id INTEGER PRIMARY KEY, name TEXT, content TEXT)")
+        self.conn.commit()
+
+    def save_scenes_to_db(self):
+        """Save scenes to the database."""
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM scenes")
+        for item in self.tree.get_children():
+            scene_name = self.tree.item(item, "text")
+            scene_content = self.text_editor.get("1.0", tk.END).strip() if item == self.current_scene else ""
+            cursor.execute("INSERT INTO scenes (name, content) VALUES (?, ?)", (scene_name, scene_content))
+        self.conn.commit()
+
+    def load_scenes_from_db(self):
+        """Load scenes from the database."""
+        self.tree.delete(*self.tree.get_children())
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT id, name FROM scenes")
+        for row in cursor.fetchall():
+            self.tree.insert("", "end", text=row[1], iid=row[0])
+        self.update_status_bar("Scenes loaded.")
+
+    def add_scene(self):
+        """Add a new scene."""
+        scene_name = f"Scene {len(self.tree.get_children()) + 1}"
+        self.tree.insert("", "end", text=scene_name)
+        self.update_status_bar(f"Added {scene_name}")
+
+    def load_scene(self, event):
+        """Load the selected scene into the editor."""
+        selected_item = self.tree.focus()
+        if selected_item:
+            cursor = self.conn.cursor()
+            cursor.execute("SELECT content FROM scenes WHERE id=?", (selected_item,))
+            row = cursor.fetchone()
+            if row:
+                self.text_editor.delete("1.0", tk.END)
+                self.text_editor.insert("1.0", row[0])
+                self.current_scene = selected_item
+                self.update_status_bar(f"Loaded {self.tree.item(selected_item, 'text')}")
 
     def toggle_bold(self):
         """Toggle bold formatting."""
@@ -131,30 +196,10 @@ class WritingApp:
         current_font.configure(size=new_size)
         self.text_editor.config(font=current_font)
 
-    # Database and scene management methods (from previous code)
-
-    def add_scene(self):
-        """Add a new scene."""
-        pass  # Same logic as before
-
-    def load_scene(self, event):
-        """Load scene into editor."""
-        pass  # Same logic as before
-
-    def save_project(self):
-        """Save project data."""
-        pass  # Same logic as before
-
-    def new_project(self):
-        """Create a new project."""
-        pass  # Same logic as before
-
-    def open_project(self):
-        """Open an existing project."""
-        pass  # Same logic as before
-
     def close_app(self):
         """Close the application."""
+        if self.conn:
+            self.conn.close()
         self.root.quit()
 
 
