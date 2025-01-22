@@ -20,99 +20,7 @@ class WritingApp:
         self.create_main_window()
         self.create_status_bar()
 
-    def create_menu(self):
-        """Create the top menu bar."""
-        menu = tk.Menu(self.root)
-        self.root.config(menu=menu)
 
-        # File Menu
-        file_menu = tk.Menu(menu, tearoff=False)
-        file_menu.add_command(label="New Project", command=self.new_project)
-        file_menu.add_command(label="Open Project", command=self.open_project)
-        file_menu.add_command(label="Save Project", command=self.save_project)
-        file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=self.close_app)
-        menu.add_cascade(label="File", menu=file_menu)
-
-    def create_toolbar(self):
-        """Create a toolbar with formatting options."""
-        toolbar = ttk.Frame(self.root, padding=5)
-        toolbar.pack(side="top", fill="x")
-
-        bold_btn = ttk.Button(toolbar, text="Bold", command=self.toggle_bold)
-        bold_btn.pack(side="left", padx=2)
-
-        italic_btn = ttk.Button(toolbar, text="Italic", command=self.toggle_italic)
-        italic_btn.pack(side="left", padx=2)
-
-        font_sizes = [10, 12, 14, 16, 18, 20, 24]
-        self.font_size_var = tk.IntVar(value=12)
-        font_size_menu = ttk.Combobox(toolbar, textvariable=self.font_size_var, values=font_sizes, width=5)
-        font_size_menu.bind("<<ComboboxSelected>>", self.change_font_size)
-        font_size_menu.pack(side="left", padx=5)
-
-    def create_main_window(self):
-        """Create the main window layout."""
-        self.main_frame = ttk.PanedWindow(self.root, orient=tk.HORIZONTAL)
-        self.main_frame.pack(fill="both", expand=True)
-
-        # Left panel: Scenes
-        self.scene_frame = ttk.Frame(self.main_frame, width=200)
-        self.main_frame.add(self.scene_frame, weight=1)
-
-        self.tree = ttk.Treeview(self.scene_frame)
-        self.tree.heading("#0", text="Scenes", anchor="w")
-        self.tree.bind("<<TreeviewSelect>>", self.load_scene)
-        self.tree.pack(fill="both", expand=True, padx=5, pady=5)
-
-        self.add_button = ttk.Button(self.scene_frame, text="Add Scene", command=self.add_scene)
-        self.add_button.pack(pady=5)
-
-        # Middle panel: Text editor
-        self.editor_frame = ttk.Frame(self.main_frame)
-        self.main_frame.add(self.editor_frame, weight=3)
-
-        self.text_editor = tk.Text(self.editor_frame, wrap="word", undo=True, font=("Arial", 12))
-        self.text_editor.pack(fill="both", expand=True, padx=5, pady=5)
-
-        # Right panel: Notes
-        self.notes_frame = ttk.Frame(self.main_frame, width=200)
-        self.main_frame.add(self.notes_frame, weight=1)
-
-        self.notes_tree = ttk.Treeview(self.notes_frame)
-        self.notes_tree.heading("#0", text="Notes", anchor="w")
-        self.notes_tree.bind("<<TreeviewSelect>>", self.load_note)  # Define load_note method
-        self.notes_tree.pack(fill="both", expand=True, padx=5, pady=5)
-
-        self.add_note_button = ttk.Button(self.notes_frame, text="Add Note", command=self.add_note)
-        self.add_note_button.pack(pady=5)
-
-
-    def add_note(self):
-        """Add a new note."""
-        note_name = f"Note {len(self.notes_tree.get_children()) + 1}"
-        self.notes_tree.insert("", "end", text=note_name)
-        self.update_status_bar(f"Added {note_name}")
-
-    def load_note(self, event):
-        """Load the selected note into the editor."""
-        selected_item = self.notes_tree.focus()
-        if selected_item:
-            note_name = self.notes_tree.item(selected_item, "text")
-            self.text_editor.delete("1.0", tk.END)
-            self.text_editor.insert("1.0", f"Content for {note_name}")
-            self.update_status_bar(f"Loaded {note_name}")
-
-
-
-    def create_status_bar(self):
-        """Create a status bar at the bottom."""
-        self.status_bar = ttk.Label(self.root, text="Ready", anchor="w")
-        self.status_bar.pack(side="bottom", fill="x")
-
-    def update_status_bar(self, message):
-        """Update the status bar with a custom message."""
-        self.status_bar.config(text=message)
 
     def new_project(self):
         """Create a new project."""
@@ -154,6 +62,127 @@ class WritingApp:
 
         self.save_scenes_to_db()
         self.update_status_bar(f"Project saved: {os.path.basename(self.current_project_path)}")
+
+
+
+    def create_menu(self):
+        """Create the top menu bar."""
+        menu = tk.Menu(self.root)
+        self.root.config(menu=menu)
+
+        # File Menu
+        file_menu = tk.Menu(menu, tearoff=False)
+        file_menu.add_command(label="New Project", command=self.new_project)
+        file_menu.add_command(label="Open Project", command=self.open_project)
+        file_menu.add_command(label="Save Project", command=self.save_project)
+        file_menu.add_separator()
+        file_menu.add_command(label="Exit", command=self.close_app)
+        menu.add_cascade(label="File", menu=file_menu)
+
+    def create_toolbar(self):
+        """Create a toolbar with formatting options."""
+        toolbar = ttk.Frame(self.root, padding=5)
+        toolbar.pack(side="top", fill="x")
+
+        bold_btn = ttk.Button(toolbar, text="Bold", command=self.toggle_bold)
+        bold_btn.pack(side="left", padx=2)
+
+        italic_btn = ttk.Button(toolbar, text="Italic", command=self.toggle_italic)
+        italic_btn.pack(side="left", padx=2)
+
+        font_sizes = [10, 12, 14, 16, 18, 20, 24]
+        self.font_size_var = tk.IntVar(value=12)
+        font_size_menu = ttk.Combobox(toolbar, textvariable=self.font_size_var, values=font_sizes, width=5)
+        font_size_menu.bind("<<ComboboxSelected>>", self.change_font_size)
+        font_size_menu.pack(side="left", padx=5)
+
+
+    def create_main_window(self):
+        """Create the main window layout."""
+        self.main_frame = ttk.PanedWindow(self.root, orient=tk.HORIZONTAL)
+        self.main_frame.pack(fill="both", expand=True)
+
+        # Left panel: Scenes
+        self.scene_frame = ttk.Frame(self.main_frame, width=200)
+        self.main_frame.add(self.scene_frame, weight=1)
+
+        self.tree = ttk.Treeview(self.scene_frame)
+        self.tree.heading("#0", text="Scenes", anchor="w")
+        self.tree.bind("<<TreeviewSelect>>", self.load_scene)
+        self.tree.pack(fill="both", expand=True, padx=5, pady=5)
+
+        self.add_button = ttk.Button(self.scene_frame, text="Add Scene", command=self.add_scene)
+        self.add_button.pack(pady=5)
+
+        # Middle panel: Text editor
+        self.editor_frame = ttk.Frame(self.main_frame)
+        self.main_frame.add(self.editor_frame, weight=3)
+
+        self.text_editor = tk.Text(self.editor_frame, wrap="word", undo=True, font=("Arial", 12))
+        self.text_editor.pack(fill="both", expand=True, padx=5, pady=5)
+
+        # Right panel: Annotations
+        self.notes_frame = ttk.Frame(self.main_frame, width=200)
+        self.main_frame.add(self.notes_frame, weight=1)
+
+        self.notes_tree = ttk.Treeview(self.notes_frame, columns=("checked"), show="tree")
+        self.notes_tree.heading("#0", text="Annotations", anchor="w")
+        self.notes_tree.column("#0", width=150)
+        self.notes_tree.column("checked", width=50)
+        self.notes_tree.pack(fill="both", expand=True, padx=5, pady=5)
+
+        # Button to add annotation with checkbox
+        self.add_note_button = ttk.Button(self.notes_frame, text="Add Annotation", command=self.add_annotation)
+        self.add_note_button.pack(pady=5)
+
+
+
+    def add_annotation(self):
+        """Add a new annotation with a checkbox."""
+        annotation_id = len(self.notes_tree.get_children()) + 1
+        annotation_name = f"Annotation {annotation_id}"
+        self.notes_tree.insert("", "end", iid=annotation_id, text=annotation_name, tags=("unchecked",))
+        self.notes_tree.tag_bind("unchecked", "<Double-1>", self.toggle_checkbox)
+
+    def toggle_checkbox(self, event):
+        """Toggle the checkbox state of an annotation."""
+        item = self.notes_tree.identify_row(event.y)
+        if item:
+            tags = self.notes_tree.item(item, "tags")
+            if "unchecked" in tags:
+                self.notes_tree.item(item, tags=("checked",))
+            else:
+                self.notes_tree.item(item, tags=("unchecked",))
+
+        # Update the annotation display based on the state
+        for child in self.notes_tree.get_children():
+            tags = self.notes_tree.item(child, "tags")
+            if "checked" in tags:
+                self.notes_tree.item(child, text=f"{self.notes_tree.item(child, 'text')} ✅")
+            else:
+                text = self.notes_tree.item(child, "text").replace(" ✅", "")
+                self.notes_tree.item(child, text=text)
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def create_status_bar(self):
+        """Create a status bar at the bottom."""
+        self.status_bar = ttk.Label(self.root, text="Ready", anchor="w")
+        self.status_bar.pack(side="bottom", fill="x")
+
+    def update_status_bar(self, message):
+        """Update the status bar with a custom message."""
+        self.status_bar.config(text=message)
 
     def create_db_schema(self):
         """Create the database schema."""
