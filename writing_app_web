@@ -1,0 +1,158 @@
+// Project setup:
+// - React (Frontend)
+// - Draft.js (Text Editor)
+// - FastAPI (Backend)
+// - SQLite (Database)
+
+// Frontend Structure (React):
+// - Components:
+//   1. TextEditor: Main editor with Draft.js.
+//   2. SceneList: Sidebar to manage scenes.
+//   3. Annotations: Panel for annotations with checkboxes.
+// - State Management: React Context API or Redux for managing project state.
+
+// Backend Structure (FastAPI):
+// - Endpoints:
+//   1. GET /scenes: Fetch all scenes.
+//   2. POST /scenes: Create a new scene.
+//   3. GET /annotations: Fetch annotations.
+//   4. POST /annotations: Add a new annotation.
+//   5. PUT /annotations: Update annotation state.
+// - Database Models: Use SQLite for storing scenes and annotations.
+
+// =========================== Frontend Code ===========================
+
+// Install dependencies:
+// npm install react react-dom draft-js axios
+
+import React, { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
+import { Editor, EditorState, RichUtils } from "draft-js";
+import axios from "axios";
+import "draft-js/dist/Draft.css";
+
+const TextEditor = ({ currentScene, saveScene }) => {
+    const [editorState, setEditorState] = useState(EditorState.createEmpty());
+
+    useEffect(() => {
+        if (currentScene) {
+            // Load content when scene changes
+            const contentState = EditorState.createWithContent(currentScene.content);
+            setEditorState(contentState);
+        }
+    }, [currentScene]);
+
+    const handleKeyCommand = (command) => {
+        const newState = RichUtils.handleKeyCommand(editorState, command);
+        if (newState) {
+            setEditorState(newState);
+            return "handled";
+        }
+        return "not-handled";
+    };
+
+    const saveContent = () => {
+        saveScene({ ...currentScene, content: editorState.getCurrentContent() });
+    };
+
+    return (
+        <div>
+            <button onClick={saveContent}>Save</button>
+            <Editor
+                editorState={editorState}
+                onChange={setEditorState}
+                handleKeyCommand={handleKeyCommand}
+            />
+        </div>
+    );
+};
+
+const SceneList = ({ scenes, selectScene }) => (
+    <div>
+        <h2>Scenes</h2>
+        <ul>
+            {scenes.map((scene) => (
+                <li key={scene.id} onClick={() => selectScene(scene)}>
+                    {scene.name}
+                </li>
+            ))}
+        </ul>
+    </div>
+);
+
+const App = () => {
+    const [scenes, setScenes] = useState([]);
+    const [currentScene, setCurrentScene] = useState(null);
+
+    useEffect(() => {
+        axios.get("http://localhost:8000/scenes").then((response) => {
+            setScenes(response.data);
+        });
+    }, []);
+
+    const saveScene = (scene) => {
+        axios.post("http://localhost:8000/scenes", scene).then(() => {
+            setScenes((prev) =>
+                prev.map((s) => (s.id === scene.id ? { ...s, content: scene.content } : s))
+            );
+        });
+    };
+
+    return (
+        <div style={{ display: "flex" }}>
+            <SceneList scenes={scenes} selectScene={setCurrentScene} />
+            {currentScene && <TextEditor currentScene={currentScene} saveScene={saveScene} />}
+        </div>
+    );
+};
+
+ReactDOM.render(<App />, document.getElementById("root"));
+
+// =========================== Backend Code ===========================
+
+# Install dependencies:
+# pip install fastapi uvicorn sqlite
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+import sqlite3
+
+app = FastAPI()
+
+# Database initialization
+def init_db():
+    conn = sqlite3.connect("app.db")
+    cursor = conn.cursor()
+    cursor.execute("CREATE TABLE IF NOT EXISTS scenes (id INTEGER PRIMARY KEY, name TEXT, content TEXT)")
+    conn.commit()
+    conn.close()
+
+init_db()
+
+# Models
+class Scene(BaseModel):
+    id: int
+    name: str
+    content: str
+
+# Endpoints
+@app.get("/scenes")
+def get_scenes():
+    conn = sqlite3.connect("app.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM scenes")
+    scenes = cursor.fetchall()
+    conn.close()
+    return [Scene(id=row[0], name=row[1], content=row[2]) for row in scenes]
+
+@app.post("/scenes")
+def save_scene(scene: Scene):
+    conn = sqlite3.connect("app.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT OR REPLACE INTO scenes (id, name, content) VALUES (?, ?, ?)", (scene.id, scene.name, scene.content))
+    conn.commit()
+    conn.close()
+    return {"status": "success"}
+
+# Run server
+# uvicorn main:app --reload
