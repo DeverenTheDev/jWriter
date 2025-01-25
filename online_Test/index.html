@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Text Editor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="editor-container">
+        <div class="toolbar">
+            <button onclick="formatText('bold')">Bold</button>
+            <button onclick="formatText('italic')">Italic</button>
+            <select id="fontSelect" onchange="changeFont(this.value)">
+                <option value="Arial">Arial</option>
+                <option value="Courier New">Courier New</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Verdana">Verdana</option>
+            </select>
+            <input type="color" id="textColor" onchange="changeTextColor(this.value)">
+            <input type="color" id="highlightColor" onchange="changeHighlightColor(this.value)">
+            <button onclick="alignText('left')">Left</button>
+            <button onclick="alignText('center')">Center</button>
+            <button onclick="alignText('right')">Right</button>
+            <button onclick="alignText('justify')">Justify</button>
+        </div>
+        <div class="content-wrapper">
+            <!-- Text Editor -->
+            <div id="editor" contenteditable="true" placeholder="Start typing here..." oninput="updateMarkup()"></div>
+            
+            <!-- Markup Viewer -->
+            <div class="side-box" id="markupViewer">
+                <h3>Markup View</h3>
+                <pre id="markupText"></pre>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Text Editor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="editor-container">
+        <div class="toolbar">
+            <button onclick="formatText('bold')">Bold</button>
+            <button onclick="formatText('italic')">Italic</button>
+            <select id="fontSelect" onchange="changeFont(this.value)">
+                <option value="Arial">Arial</option>
+                <option value="Courier New">Courier New</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Verdana">Verdana</option>
+            </select>
+            <input type="color" id="textColor" onchange="changeTextColor(this.value)">
+            <input type="color" id="highlightColor" onchange="changeHighlightColor(this.value)">
+            <button onclick="alignText('left')">Left</button>
+            <button onclick="alignText('center')">Center</button>
+            <button onclick="alignText('right')">Right</button>
+            <button onclick="alignText('justify')">Justify</button>
+        </div>
+        <div class="content-wrapper">-->
+            <!-- Text Editor
+            <div id="editor" contenteditable="true" placeholder="Start typing here..."></div>
+            
+            ##Additional Box -->
+<!--
+            <div class="side-box">
+                <h3>Options</h3>
+                <label>
+                    <input type="checkbox" id="annotationToggle" onchange="toggleAnnotation()"> Annotation On/Off
+                </label>
+                <p id="annotationStatus">Annotations are off.</p>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>  -->
+
+
+
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Text Editor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="editor-container">
+        <div class="toolbar">
+            <button onclick="formatText('bold')">Bold</button>
+            <button onclick="formatText('italic')">Italic</button>
+            <select id="fontSelect" onchange="changeFont(this.value)">
+                <option value="Arial">Arial</option>
+                <option value="Courier New">Courier New</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Verdana">Verdana</option>
+            </select>
+            <input type="color" id="textColor" onchange="changeTextColor(this.value)">
+            <input type="color" id="highlightColor" onchange="changeHighlightColor(this.value)">
+        </div>
+        <div class="content-wrapper">
+            -->
+<!--
+            ## Text Editor##
+            <div id="editor" contenteditable="true" placeholder="Start typing here..."></div>
+            
+            ## Additional Box ##
+            <div class="side-box">
+                <h3>Side Box</h3>
+                <p>This box can be used for a preview, saved files, or other content.</p>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> -->
+
+
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Text Editor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="editor-container">
+        <div class="toolbar">
+            <button onclick="formatText('bold')">Bold</button>
+            <button onclick="formatText('italic')">Italic</button>
+            <select id="fontSelect" onchange="changeFont(this.value)">
+                <option value="Arial">Arial</option>
+                <option value="Courier New">Courier New</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Verdana">Verdana</option>
+            </select>
+            <input type="color" id="textColor" onchange="changeTextColor(this.value)">
+            <input type="color" id="highlightColor" onchange="changeHighlightColor(this.value)">
+        </div>
+        <div id="editor" contenteditable="true" placeholder="Start typing here..."></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> -->
+
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Text Editor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="editor-container">
+        <textarea id="editor" placeholder="Start typing here..."></textarea>
+        <div class="buttons">
+            <button onclick="saveText()">Save</button>
+            <button onclick="clearText()">Clear</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> -->
